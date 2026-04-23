@@ -1,6 +1,6 @@
-# Visa Fullstack Senior SWE Prep
+# InterviewPrep
 
-Beginner-first interview prep site for the Visa Fullstack Senior Software Engineer role.
+Beginner-first Visa Fullstack Senior Software Engineer interview prep site.
 
 ## Live Site
 
