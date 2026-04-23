@@ -155,6 +155,10 @@ function setupEvents() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   });
 
+  document.getElementById('sidebar-close').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('collapsed');
+  });
+
   window.addEventListener('hashchange', () => {
     const pageId = window.location.hash.replace('#', '');
     if (pageId && pageId !== currentPage?.id) loadPage(pageId);
@@ -264,9 +268,16 @@ function createNavItem(page, isChild = false) {
   item.addEventListener('click', event => {
     event.preventDefault();
     loadPage(page.id);
+    closeSidebarOnMobile();
   });
 
   return item;
+}
+
+function closeSidebarOnMobile() {
+  if (window.matchMedia('(max-width: 820px)').matches) {
+    document.getElementById('sidebar').classList.remove('collapsed');
+  }
 }
 
 function statusShortLabel(status) {
