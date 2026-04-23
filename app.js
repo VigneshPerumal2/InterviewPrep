@@ -21,6 +21,20 @@ const pages = [
     readingTime: 45
   },
   {
+    id: 'payments-deep-dive',
+    title: 'Payments Deep Dive',
+    group: 'Core Knowledge',
+    file: 'content/09-payments-deep-dive.md',
+    readingTime: 42
+  },
+  {
+    id: 'api-security-observability',
+    title: 'API Security and Observability',
+    group: 'Core Knowledge',
+    file: 'content/10-api-security-observability.md',
+    readingTime: 38
+  },
+  {
     id: 'coding-framework',
     title: 'Coding Round',
     group: 'Coding Round',
@@ -81,6 +95,13 @@ const pages = [
     readingTime: 40
   },
   {
+    id: 'question-bank',
+    title: 'Visa Question Bank',
+    group: 'Practice Plan',
+    file: 'content/11-visa-question-bank.md',
+    readingTime: 35
+  },
+  {
     id: 'seven-day-plan',
     title: '7-Day Study Plan',
     group: 'Practice Plan',
@@ -112,6 +133,7 @@ let progress = {
 let scrollPositions = {};
 let scrollSaveTimeout = null;
 let currentQuiz = null;
+let currentPracticePrompt = null;
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -169,6 +191,11 @@ function setupEvents() {
   document.getElementById('quiz-close-scrim').addEventListener('click', closeQuiz);
   document.getElementById('quiz-next').addEventListener('click', renderQuizQuestion);
   document.getElementById('quiz-show-answer').addEventListener('click', revealQuizAnswer);
+  document.getElementById('practice-button').addEventListener('click', openPractice);
+  document.getElementById('practice-close').addEventListener('click', closePractice);
+  document.getElementById('practice-close-scrim').addEventListener('click', closePractice);
+  document.getElementById('practice-next').addEventListener('click', renderPracticePrompt);
+  document.getElementById('practice-show-answer').addEventListener('click', revealPracticeAnswer);
 }
 
 function loadProgress() {
@@ -328,6 +355,7 @@ async function loadPage(pageId) {
         <span>${page.readingTime} min guided read</span>
         <span>Progress saves in this browser</span>
       </div>
+      ${renderProgressSummary(page)}
       ${marked.parse(markdown)}
     `;
 
@@ -337,12 +365,48 @@ async function loadPage(pageId) {
 
     await renderMermaid(content);
     injectSectionProgress(content, page.id);
+    injectCopyNextThingButton(content);
     generateTOC(content);
     content.scrollTop = scrollPositions[page.id] || 0;
   } catch (error) {
     content.innerHTML = `<div class="error"><h2>Page could not load</h2><p>${error.message}</p></div>`;
     clearTOC();
   }
+}
+
+function renderProgressSummary(page) {
+  if (page.id !== 'start-here') return '';
+  const allPages = flattenPages();
+  const completed = allPages.filter(item => progress.completedPages[item.id]).length;
+  const codingStats = getTrackStats(pages.find(item => item.id === 'coding-framework'));
+  const hldStats = getTrackStats(pages.find(item => item.id === 'hld-framework'));
+  const lldStats = getTrackStats(pages.find(item => item.id === 'lld-framework'));
+  const readyCount = Object.values(progress.problemStatus).filter(status => status === 'Interview Ready').length;
+
+  return `
+    <section class="study-dashboard">
+      <div class="dashboard-card">
+        <span class="dashboard-label">Overall</span>
+        <strong>${completed}/${allPages.length}</strong>
+        <span>pages complete</span>
+      </div>
+      <div class="dashboard-card">
+        <span class="dashboard-label">Coding</span>
+        <strong>${codingStats.completed}/${codingStats.total}</strong>
+        <span>problems ready</span>
+      </div>
+      <div class="dashboard-card">
+        <span class="dashboard-label">Design</span>
+        <strong>${hldStats.completed + lldStats.completed}/${hldStats.total + lldStats.total}</strong>
+        <span>HLD + LLD done</span>
+      </div>
+      <div class="dashboard-card">
+        <span class="dashboard-label">Interview Ready</span>
+        <strong>${readyCount}</strong>
+        <span>items marked ready</span>
+      </div>
+    </section>
+  `;
 }
 
 function renderStatusSelect(pageId) {
@@ -399,6 +463,30 @@ function injectSectionProgress(content, pageId) {
     button.addEventListener('click', () => toggleSection(sectionKey, button));
     heading.prepend(button);
   });
+}
+
+function injectCopyNextThingButton(content) {
+  const heading = Array.from(content.querySelectorAll('h2')).find(item => item.textContent.includes('NEXT THING TO SAY'));
+  if (!heading) return;
+  const paragraph = heading.nextElementSibling;
+  if (!paragraph) return;
+  const button = document.createElement('button');
+  button.className = 'copy-say-button';
+  button.type = 'button';
+  button.textContent = 'Copy what to say';
+  button.addEventListener('click', async () => {
+    const text = paragraph.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = 'Copied';
+      setTimeout(() => {
+        button.textContent = 'Copy what to say';
+      }, 1200);
+    } catch (error) {
+      button.textContent = 'Select text manually';
+    }
+  });
+  heading.appendChild(button);
 }
 
 function toggleSection(sectionKey, button) {
@@ -536,6 +624,35 @@ function revealQuizAnswer() {
   document.querySelectorAll('.quiz-option').forEach((option, index) => {
     if (index === currentQuiz.answer) option.classList.add('correct');
   });
+}
+
+function openPractice() {
+  document.getElementById('practice-modal').classList.add('open');
+  document.getElementById('practice-modal').setAttribute('aria-hidden', 'false');
+  renderPracticePrompt();
+}
+
+function closePractice() {
+  document.getElementById('practice-modal').classList.remove('open');
+  document.getElementById('practice-modal').setAttribute('aria-hidden', 'true');
+}
+
+function renderPracticePrompt() {
+  const bank = window.visaPracticePrompts || [];
+  currentPracticePrompt = bank[Math.floor(Math.random() * bank.length)];
+  if (!currentPracticePrompt) return;
+
+  document.getElementById('practice-meta').textContent = currentPracticePrompt.category;
+  document.getElementById('practice-prompt').textContent = currentPracticePrompt.prompt;
+  document.getElementById('practice-answer').classList.remove('visible');
+  document.getElementById('practice-answer').textContent = '';
+}
+
+function revealPracticeAnswer() {
+  if (!currentPracticePrompt) return;
+  const answer = document.getElementById('practice-answer');
+  answer.classList.add('visible');
+  answer.textContent = currentPracticePrompt.answer;
 }
 
 window.toggleComplete = toggleComplete;

@@ -216,6 +216,7 @@ body {
 }
 
 .quiz-button,
+.practice-button,
 .primary-button,
 .secondary-button,
 .complete-button {
@@ -231,6 +232,15 @@ body {
   padding: 11px 12px;
   background: var(--visa-gold);
   color: #071b55;
+}
+
+.practice-button {
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .content {
@@ -401,6 +411,37 @@ body {
   font-weight: 700;
 }
 
+.study-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 18px 0 26px;
+}
+
+.dashboard-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff, #f4f7ff);
+  box-shadow: 0 12px 30px rgba(20, 52, 203, 0.07);
+}
+
+.dashboard-card strong {
+  display: block;
+  margin: 5px 0;
+  color: var(--visa-blue);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.dashboard-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .markdown-body h1:first-of-type {
   display: none;
 }
@@ -523,6 +564,18 @@ body {
 .section-check.checked {
   background: var(--visa-blue);
   color: #ffffff;
+}
+
+.copy-say-button {
+  border: 1px solid rgba(20, 52, 203, 0.22);
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--visa-blue);
+  padding: 7px 10px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .mermaid-diagram {
@@ -785,6 +838,14 @@ body {
 .quiz-question {
   color: var(--ink);
   font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.practice-prompt {
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.5;
   margin-bottom: 14px;
 }
 

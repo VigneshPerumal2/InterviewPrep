@@ -14,6 +14,14 @@ Use this order:
 6. Prepare `Behavioral and Hiring Manager`.
 7. Follow the `7-Day Study Plan`.
 
+## New Interactive Study Tools
+
+- Use `Practice Prompt` in the sidebar when you want a random spoken drill.
+- Use `Quick Quiz` when you want a fast multiple-choice check.
+- Use the status dropdown on each page: `Not Started`, `Learning`, `Practiced`, or `Interview Ready`.
+- Use the round check button beside each section heading to track smaller study steps.
+- Use `Copy what to say` on pages that start with `NEXT THING TO SAY`.
+
 ## Tiny Example
 
 Imagine a restaurant.

@@ -38,6 +38,7 @@
       <nav class="nav-tree" id="nav-tree"></nav>
 
       <div class="sidebar-footer">
+        <button class="practice-button" id="practice-button">Practice Prompt</button>
         <button class="quiz-button" id="quiz-button">Quick Quiz</button>
       </div>
     </aside>
@@ -76,6 +77,25 @@
       <div class="modal-actions">
         <button class="secondary-button" id="quiz-show-answer">Show Answer</button>
         <button class="primary-button" id="quiz-next">Next Question</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="practice-modal" aria-hidden="true">
+    <div class="modal-scrim" id="practice-close-scrim"></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="practice-title">
+      <div class="modal-header">
+        <h2 id="practice-title">Study Prompt</h2>
+        <button class="icon-button" id="practice-close" aria-label="Close practice prompt">x</button>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-meta" id="practice-meta"></div>
+        <div class="practice-prompt" id="practice-prompt"></div>
+        <div class="quiz-explanation" id="practice-answer"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-button" id="practice-show-answer">Show Suggested Answer</button>
+        <button class="primary-button" id="practice-next">Next Prompt</button>
       </div>
     </section>
   </div>

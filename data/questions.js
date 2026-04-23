@@ -91,3 +91,56 @@ window.visaQuestionBank = [
     explanation: 'Loading, error, and empty states make API-driven screens predictable and user-friendly.'
   }
 ];
+
+window.visaPracticePrompts = [
+  {
+    category: 'Coding',
+    prompt: 'Explain Merge Two Sorted Arrays out loud using constraints, brute force, pattern, dry run, and complexity.',
+    answer: 'Say that the arrays are sorted, nums1 has extra space, and the safest optimized approach is two pointers from the back. Brute force sorts all values in linearithmic time, O(n log n). The optimized approach is linear time, O(n), and constant space, O(1).'
+  },
+  {
+    category: 'Coding',
+    prompt: 'Give the invariant for Sliding Window Maximum.',
+    answer: 'The deque stores indexes whose values are decreasing from front to back, and the front index is always the maximum for the current window.'
+  },
+  {
+    category: 'Payments',
+    prompt: 'Explain authorization, capture, refund, and void in simple English.',
+    answer: 'Authorization asks for approval. Capture finalizes an approved payment. Refund returns money after completion. Void cancels a request before it fully completes.'
+  },
+  {
+    category: 'Payments',
+    prompt: 'Explain why idempotency matters for payment APIs.',
+    answer: 'Payment clients retry after timeouts. Idempotency makes the same request return the same result instead of creating a duplicate charge.'
+  },
+  {
+    category: 'HLD',
+    prompt: 'Give a 20-second framing for a payment gateway design.',
+    answer: 'I will design a gateway that accepts merchant payment requests, prevents duplicate charges, routes authorization, and records decisions. Success means fast authorization, high availability, and complete auditability.'
+  },
+  {
+    category: 'HLD',
+    prompt: 'What safe fallback would you use if fraud data is unavailable?',
+    answer: 'For high-risk traffic, send to review or decline by default. For low-risk traffic, use rules-only fallback if business policy allows it. Always log the reason.'
+  },
+  {
+    category: 'LLD',
+    prompt: 'Name two invariants for an idempotency key manager.',
+    answer: 'One key maps to one request hash. A completed duplicate request returns the original response.'
+  },
+  {
+    category: 'Behavioral',
+    prompt: 'Which resume story should you use for production maturity?',
+    answer: 'Use the RUM-based incident triage story: you attached user-session context to alerts and reduced duplicate escalations.'
+  },
+  {
+    category: 'System Design',
+    prompt: 'Explain cache failure in simple English.',
+    answer: 'If cache is down, the system should still work by reading from the database, but it will be slower. Protect the database with limits and alerts.'
+  },
+  {
+    category: 'Security',
+    prompt: 'Explain authentication versus authorization.',
+    answer: 'Authentication proves who the user or service is. Authorization decides what that identity is allowed to do.'
+  }
+];
