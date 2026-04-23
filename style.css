@@ -175,6 +175,28 @@ body {
   color: #b6c8e7;
 }
 
+.nav-children {
+  margin: 2px 0 8px 18px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.nav-item.child {
+  min-height: 34px;
+  padding: 7px 9px;
+  font-size: 12.5px;
+}
+
+.nav-status {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 2px 6px;
+  color: #071b55;
+  background: #fde68a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .sidebar-footer {
   padding: 16px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.13);
@@ -318,6 +340,34 @@ body {
   border: 1px solid rgba(20, 52, 203, 0.2);
 }
 
+.page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-select {
+  min-width: 150px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  padding: 9px 10px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
 .page-meta {
   display: flex;
   flex-wrap: wrap;
@@ -343,6 +393,9 @@ body {
 }
 
 .markdown-body h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 34px 0 14px;
   color: var(--ink);
   font-family: var(--font-display);
@@ -441,6 +494,24 @@ body {
   line-height: 1.6;
 }
 
+.section-check {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: 1px solid rgba(20, 52, 203, 0.24);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--visa-blue);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.section-check.checked {
+  background: var(--visa-blue);
+  color: #ffffff;
+}
+
 .mermaid-diagram {
   overflow-x: auto;
   margin: 18px 0 24px;
@@ -457,6 +528,161 @@ body {
 .mermaid-error {
   color: var(--danger);
   font-family: var(--font-mono);
+}
+
+.visual-demo {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 18px 0 24px;
+  padding: 18px;
+  background: linear-gradient(180deg, #ffffff, #f3f7ff);
+}
+
+.visual-demo-title {
+  color: var(--visa-blue);
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.array-demo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  overflow-x: auto;
+}
+
+.array-cell {
+  min-width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #c7d2fe;
+  border-radius: 9px;
+  background: #eef4ff;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.array-cell.hot {
+  animation: pulseCell 1.6s ease-in-out infinite;
+  background: #fff7d6;
+  border-color: var(--visa-gold);
+}
+
+.pointer-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--visa-blue);
+  animation: movePointer 3s ease-in-out infinite;
+}
+
+.window-demo {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  padding-bottom: 18px;
+}
+
+.window-demo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 152px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--visa-gold);
+  animation: slideWindow 3s ease-in-out infinite;
+}
+
+.grid-demo {
+  display: grid;
+  grid-template-columns: repeat(4, 42px);
+  gap: 7px;
+}
+
+.grid-cell {
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #eef4ff;
+  border: 1px solid #c7d2fe;
+  font-weight: 900;
+}
+
+.grid-cell.blocked {
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.grid-cell.path {
+  animation: pulseCell 1.6s ease-in-out infinite;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.cache-demo {
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.cache-row {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  background: var(--panel);
+  font-family: var(--font-mono);
+}
+
+.cache-row.evicted {
+  animation: fadeEvict 2.4s ease-in-out infinite;
+}
+
+@keyframes pulseCell {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+  50% {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(20, 52, 203, 0.12);
+  }
+}
+
+@keyframes movePointer {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(240px);
+  }
+}
+
+@keyframes slideWindow {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(116px);
+  }
+}
+
+@keyframes fadeEvict {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translateX(18px);
+  }
 }
 
 .learning-card,

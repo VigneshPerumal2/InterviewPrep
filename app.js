@@ -21,25 +21,57 @@ const pages = [
     readingTime: 45
   },
   {
-    id: 'coding-round',
+    id: 'coding-framework',
     title: 'Coding Round',
-    group: 'Interview Rounds',
-    file: 'content/03-coding-round.md',
-    readingTime: 50
+    group: 'Coding Round',
+    file: 'content/coding/00-coding-framework.md',
+    readingTime: 18,
+    children: [
+      { id: 'coding-merge-arrays', title: 'Merge Two Sorted Arrays', file: 'content/coding/merge-two-sorted-arrays.md', readingTime: 30 },
+      { id: 'coding-grid-paths', title: 'Grid Paths With Blocked Cells', file: 'content/coding/grid-paths-blocked-cells.md', readingTime: 30 },
+      { id: 'coding-stock-profit', title: 'Best Time To Buy And Sell Stock', file: 'content/coding/best-time-buy-sell-stock.md', readingTime: 26 },
+      { id: 'coding-first-recurring', title: 'First Recurring Character', file: 'content/coding/first-recurring-character.md', readingTime: 24 },
+      { id: 'coding-top-k', title: 'Top K Frequent Elements', file: 'content/coding/top-k-frequent-elements.md', readingTime: 32 },
+      { id: 'coding-sliding-window', title: 'Sliding Window Maximum', file: 'content/coding/sliding-window-maximum.md', readingTime: 34 },
+      { id: 'coding-lru-cache', title: 'LRU Cache', file: 'content/coding/lru-cache.md', readingTime: 35 },
+      { id: 'coding-trie-roots', title: 'Trie Root Word Matching', file: 'content/coding/trie-root-word-matching.md', readingTime: 34 },
+      { id: 'coding-valid-parentheses', title: 'Valid Parentheses With Wildcard', file: 'content/coding/valid-parentheses-wildcard.md', readingTime: 34 }
+    ]
   },
   {
-    id: 'hld-system-design',
+    id: 'hld-framework',
     title: 'HLD System Design',
-    group: 'Interview Rounds',
-    file: 'content/04-hld-system-design.md',
-    readingTime: 60
+    group: 'HLD System Design',
+    file: 'content/hld/00-hld-framework.md',
+    readingTime: 18,
+    children: [
+      { id: 'hld-payment-gateway', title: 'Design a Payment Gateway', file: 'content/hld/payment-gateway.md', readingTime: 35 },
+      { id: 'hld-million-transactions', title: 'Millions of Transactions System', file: 'content/hld/millions-transactions.md', readingTime: 35 },
+      { id: 'hld-fraud-detection', title: 'Real-Time Fraud Detection', file: 'content/hld/fraud-detection.md', readingTime: 35 },
+      { id: 'hld-merchant-onboarding', title: 'Merchant Onboarding Platform', file: 'content/hld/merchant-onboarding.md', readingTime: 32 },
+      { id: 'hld-rate-limiter', title: 'Payment API Rate Limiter', file: 'content/hld/payment-api-rate-limiter.md', readingTime: 30 },
+      { id: 'hld-monitoring-pipeline', title: 'Transaction Monitoring Pipeline', file: 'content/hld/transaction-monitoring-pipeline.md', readingTime: 32 },
+      { id: 'hld-notification-service', title: 'Notification and Receipt Service', file: 'content/hld/notification-receipt-service.md', readingTime: 28 },
+      { id: 'hld-scale-monolith', title: 'Scale a Monolith to 3x Traffic', file: 'content/hld/scale-monolith.md', readingTime: 30 },
+      { id: 'hld-upload-dashboard', title: 'Upload/Download Processing Dashboard', file: 'content/hld/upload-download-dashboard.md', readingTime: 30 }
+    ]
   },
   {
-    id: 'lld-design',
+    id: 'lld-framework',
     title: 'LLD Design',
-    group: 'Interview Rounds',
-    file: 'content/05-lld-design.md',
-    readingTime: 55
+    group: 'LLD Design',
+    file: 'content/lld/00-lld-framework.md',
+    readingTime: 18,
+    children: [
+      { id: 'lld-idempotency', title: 'Idempotency Key Manager', file: 'content/lld/idempotency-key-manager.md', readingTime: 32 },
+      { id: 'lld-payment-auth', title: 'Payment Authorization Workflow', file: 'content/lld/payment-authorization-workflow.md', readingTime: 32 },
+      { id: 'lld-retry-processor', title: 'Transaction Retry Processor', file: 'content/lld/transaction-retry-processor.md', readingTime: 28 },
+      { id: 'lld-fraud-rules', title: 'Fraud Rule Evaluator', file: 'content/lld/fraud-rule-evaluator.md', readingTime: 30 },
+      { id: 'lld-api-rate-limiter', title: 'API Rate Limiter', file: 'content/lld/api-rate-limiter.md', readingTime: 30 },
+      { id: 'lld-lru-cache', title: 'LRU Cache', file: 'content/lld/lru-cache.md', readingTime: 30 },
+      { id: 'lld-merchant-state', title: 'Merchant Onboarding State Machine', file: 'content/lld/merchant-onboarding-state-machine.md', readingTime: 28 },
+      { id: 'lld-audit-writer', title: 'Audit Event Writer', file: 'content/lld/audit-event-writer.md', readingTime: 28 }
+    ]
   },
   {
     id: 'behavioral-hm',
@@ -66,10 +98,14 @@ const pages = [
 
 const STORAGE_KEY = 'visaPrepProgress';
 const SCROLL_KEY = 'visaPrepScrollPositions';
+const PROBLEM_STATUS_OPTIONS = ['Not Started', 'Learning', 'Practiced', 'Interview Ready'];
 
 let currentPage = null;
 let progress = {
   completedPages: {},
+  problemStatus: {},
+  sectionStatus: {},
+  lastOpened: {},
   lastStudyDate: null,
   streak: 0
 };
@@ -133,7 +169,7 @@ function setupEvents() {
 
 function loadProgress() {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) progress = JSON.parse(saved);
+  if (saved) progress = { ...progress, ...JSON.parse(saved) };
 
   const savedScroll = localStorage.getItem(SCROLL_KEY);
   if (savedScroll) scrollPositions = JSON.parse(savedScroll);
@@ -155,6 +191,20 @@ function updateStreak() {
   saveProgress();
 }
 
+function flattenPages() {
+  return pages.flatMap(page => [page, ...(page.children || []).map(child => ({ ...child, group: page.group, parentId: page.id, parentTitle: page.title }))]);
+}
+
+function getPage(pageId) {
+  return flattenPages().find(page => page.id === pageId);
+}
+
+function getTrackStats(page) {
+  const trackPages = [page, ...(page.children || [])];
+  const completed = trackPages.filter(item => progress.completedPages[item.id]).length;
+  return { completed, total: trackPages.length };
+}
+
 function renderNavigation() {
   const navTree = document.getElementById('nav-tree');
   navTree.innerHTML = '';
@@ -162,20 +212,30 @@ function renderNavigation() {
   const groups = [...new Set(pages.map(page => page.group))];
   groups.forEach(group => {
     const groupPages = pages.filter(page => page.group === group);
-    const completed = groupPages.filter(page => progress.completedPages[page.id]).length;
+    const trackItems = groupPages.flatMap(page => [page, ...(page.children || [])]);
+    const completed = trackItems.filter(page => progress.completedPages[page.id]).length;
 
     const heading = document.createElement('div');
     heading.className = 'nav-category';
-    heading.textContent = `${group} (${completed}/${groupPages.length})`;
+    heading.textContent = `${group} (${completed}/${trackItems.length})`;
     navTree.appendChild(heading);
 
-    groupPages.forEach(page => navTree.appendChild(createNavItem(page)));
+    groupPages.forEach(page => {
+      navTree.appendChild(createNavItem(page));
+      if (page.children?.length) {
+        const childWrap = document.createElement('div');
+        childWrap.className = 'nav-children expanded';
+        childWrap.id = `children-${page.id}`;
+        page.children.forEach(child => childWrap.appendChild(createNavItem({ ...child, group: page.group, parentId: page.id }, true)));
+        navTree.appendChild(childWrap);
+      }
+    });
   });
 }
 
-function createNavItem(page) {
+function createNavItem(page, isChild = false) {
   const item = document.createElement('a');
-  item.className = 'nav-item';
+  item.className = `nav-item ${isChild ? 'child' : ''}`;
   item.href = `#${page.id}`;
   item.dataset.id = page.id;
 
@@ -194,8 +254,13 @@ function createNavItem(page) {
   title.className = 'title';
   title.textContent = page.title;
 
+  const status = document.createElement('span');
+  status.className = 'nav-status';
+  status.textContent = statusShortLabel(progress.problemStatus[page.id]);
+
   item.appendChild(checkbox);
   item.appendChild(title);
+  if (isChild) item.appendChild(status);
   item.addEventListener('click', event => {
     event.preventDefault();
     loadPage(page.id);
@@ -204,16 +269,22 @@ function createNavItem(page) {
   return item;
 }
 
-function getPage(pageId) {
-  return pages.find(page => page.id === pageId);
+function statusShortLabel(status) {
+  if (status === 'Interview Ready') return 'Ready';
+  if (status === 'Practiced') return 'Done';
+  if (status === 'Learning') return 'Learn';
+  return '';
 }
 
 async function loadPage(pageId) {
   const page = getPage(pageId) || pages[0];
   currentPage = page;
+  progress.lastOpened[page.id] = new Date().toISOString();
+  progress.lastStudyDate = new Date().toDateString();
+  saveProgress();
   window.location.hash = page.id;
 
-  document.getElementById('breadcrumb').textContent = `${page.group} / ${page.title}`;
+  document.getElementById('breadcrumb').textContent = `${page.group} / ${page.parentTitle ? `${page.parentTitle} / ` : ''}${page.title}`;
   document.getElementById('focus-display').textContent = `Current page: ${page.title}`;
 
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -235,13 +306,16 @@ async function loadPage(pageId) {
           <div class="eyebrow">${page.group}</div>
           <h1>${page.title}</h1>
         </div>
-        <button class="complete-button" onclick="toggleComplete('${page.id}')">
-          ${completed ? 'Completed' : 'Mark Complete'}
-        </button>
+        <div class="page-actions">
+          ${renderStatusSelect(page.id)}
+          <button class="complete-button" onclick="toggleComplete('${page.id}')">
+            ${completed ? 'Completed' : 'Mark Complete'}
+          </button>
+        </div>
       </div>
       <div class="page-meta">
         <span>${page.readingTime} min guided read</span>
-        <span>Beginner-first explanations</span>
+        <span>Progress saves in this browser</span>
       </div>
       ${marked.parse(markdown)}
     `;
@@ -251,12 +325,19 @@ async function loadPage(pageId) {
     });
 
     await renderMermaid(content);
+    injectSectionProgress(content, page.id);
     generateTOC(content);
     content.scrollTop = scrollPositions[page.id] || 0;
   } catch (error) {
     content.innerHTML = `<div class="error"><h2>Page could not load</h2><p>${error.message}</p></div>`;
     clearTOC();
   }
+}
+
+function renderStatusSelect(pageId) {
+  const value = progress.problemStatus[pageId] || 'Not Started';
+  const options = PROBLEM_STATUS_OPTIONS.map(option => `<option value="${option}" ${option === value ? 'selected' : ''}>${option}</option>`).join('');
+  return `<label class="status-label">Status <select class="status-select" onchange="setProblemStatus('${pageId}', this.value)">${options}</select></label>`;
 }
 
 function setupScrollTracking(content) {
@@ -294,6 +375,34 @@ async function renderMermaid(container) {
   }
 }
 
+function injectSectionProgress(content, pageId) {
+  const headings = Array.from(content.querySelectorAll('h2'));
+  headings.forEach((heading, index) => {
+    const sectionKey = `${pageId}:${index}:${heading.textContent}`;
+    const checked = Boolean(progress.sectionStatus[sectionKey]);
+    const button = document.createElement('button');
+    button.className = `section-check ${checked ? 'checked' : ''}`;
+    button.type = 'button';
+    button.textContent = checked ? '✓' : '○';
+    button.title = 'Toggle section progress';
+    button.addEventListener('click', () => toggleSection(sectionKey, button));
+    heading.prepend(button);
+  });
+}
+
+function toggleSection(sectionKey, button) {
+  if (progress.sectionStatus[sectionKey]) {
+    delete progress.sectionStatus[sectionKey];
+    button.textContent = '○';
+    button.classList.remove('checked');
+  } else {
+    progress.sectionStatus[sectionKey] = new Date().toISOString();
+    button.textContent = '✓';
+    button.classList.add('checked');
+  }
+  saveProgress();
+}
+
 function generateTOC(content) {
   const toc = document.getElementById('toc-nav');
   const sidebar = document.getElementById('toc-sidebar');
@@ -307,7 +416,7 @@ function generateTOC(content) {
     const link = document.createElement('a');
     link.href = `#${heading.id}`;
     link.className = `toc-item ${heading.tagName === 'H3' ? 'nested' : ''}`;
-    link.textContent = heading.textContent;
+    link.textContent = heading.textContent.replace(/^[✓○]\s*/, '');
     link.addEventListener('click', event => {
       event.preventDefault();
       heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -326,6 +435,7 @@ function toggleComplete(pageId) {
     delete progress.completedPages[pageId];
   } else {
     progress.completedPages[pageId] = new Date().toISOString();
+    progress.problemStatus[pageId] = 'Interview Ready';
   }
   progress.lastStudyDate = new Date().toDateString();
   saveProgress();
@@ -334,14 +444,26 @@ function toggleComplete(pageId) {
   loadPage(pageId);
 }
 
-function updateProgressUI() {
-  const total = pages.length;
-  const completed = Object.keys(progress.completedPages).length;
-  const percentage = total ? Math.round((completed / total) * 100) : 0;
+function setProblemStatus(pageId, status) {
+  progress.problemStatus[pageId] = status;
+  if (status === 'Interview Ready') progress.completedPages[pageId] = new Date().toISOString();
+  saveProgress();
+  renderNavigation();
+  updateProgressUI();
+}
 
-  document.getElementById('progress-text').textContent = `${completed}/${total} complete`;
+function updateProgressUI() {
+  const allPages = flattenPages();
+  const completed = allPages.filter(page => progress.completedPages[page.id]).length;
+  const percentage = allPages.length ? Math.round((completed / allPages.length) * 100) : 0;
+  const codingStats = getTrackStats(pages.find(page => page.id === 'coding-framework'));
+  const hldStats = getTrackStats(pages.find(page => page.id === 'hld-framework'));
+  const lldStats = getTrackStats(pages.find(page => page.id === 'lld-framework'));
+
+  document.getElementById('progress-text').textContent = `${completed}/${allPages.length} complete`;
   document.getElementById('streak-text').textContent = `${progress.streak || 0} day streak`;
   document.getElementById('progress-fill').style.width = `${percentage}%`;
+  document.getElementById('focus-display').textContent = `Coding ${codingStats.completed}/${codingStats.total} • HLD ${hldStats.completed}/${hldStats.total} • LLD ${lldStats.completed}/${lldStats.total}`;
 }
 
 function filterNavigation(query) {
@@ -406,3 +528,4 @@ function revealQuizAnswer() {
 }
 
 window.toggleComplete = toggleComplete;
+window.setProblemStatus = setProblemStatus;
