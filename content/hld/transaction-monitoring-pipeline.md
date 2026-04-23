@@ -78,3 +78,60 @@ Audit logs should show who changed dashboards and alert rules. Sensitive values 
 - **tradeoff**: dashboards may be slightly delayed.
 - **risk**: sensitive data leakage.
 - **mitigation**: field filtering and access controls.
+
+## Beginner Deep Dive: Transaction Monitoring Pipeline
+
+<div class="system-flow-demo">
+  <div class="system-flow-title">Monitoring turns raw transaction events into searchable history and alerts</div>
+  <div class="flow-lane">
+    <div class="flow-node">Payment Events</div>
+    <div class="flow-node">Event Stream</div>
+    <div class="flow-node">Stream Processor</div>
+    <div class="flow-node">Search + Warehouse</div>
+    <div class="flow-node">Dashboards + Alerts</div>
+  </div>
+  <div class="flow-packet"></div>
+</div>
+
+### Payment Events
+
+Each service emits structured events such as authorization requested, approved, declined, captured, refunded, or failed.
+
+I choose structured events because plain text logs are hard to query. Structured fields let support search by merchant, payment id, status, region, and time.
+
+### Event Stream
+
+The event stream buffers events and lets multiple consumers read them independently.
+
+This is useful because monitoring, analytics, fraud learning, and audit storage all need the same facts but should not block payment processing.
+
+### Stream Processor
+
+The stream processor enriches events, computes counters, detects anomalies, and writes to serving stores.
+
+I choose a processor because raw events are too low-level for dashboards. Dashboards need grouped, cleaned, and indexed data.
+
+### Search and Warehouse
+
+Search storage supports fast investigation. Warehouse storage supports reporting and long-term analysis.
+
+I choose both because support queries and business analytics have different access patterns.
+
+### Failure, Multi-region, and Safe Fallback
+
+**risks**: delayed events, duplicate events, missing events, and noisy alerts.
+
+**decisions**: use event ids, idempotent consumers, lag monitoring, and alert thresholds that avoid waking people for harmless noise.
+
+For multi-region, keep local event ingestion so regional outages do not stop all monitoring. Replicate summarized data carefully for global dashboards.
+
+## Follow-up Interview Questions With Answers
+
+**Q: What if events arrive late?**  
+A: Store event time and processing time. Dashboards can correct counts when late events arrive.
+
+**Q: How do you debug one payment?**  
+A: Search by payment id and trace id to see the request across API, fraud, processor, and audit services.
+
+**Q: Why not query the payment database directly for dashboards?**  
+A: Dashboards can overload the payment database. A separate monitoring store protects the main transaction path.

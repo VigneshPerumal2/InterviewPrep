@@ -126,3 +126,47 @@ A: Make the job action idempotent with a job id or transaction id.
 ## 10) Tradeoffs and Wrap
 
 Retry improves reliability, but too many retries can overload dependencies. Use limits and delay.
+
+## Beginner Deep Dive: Transaction Retry Processor
+
+<div class="class-demo">
+  <div class="class-card"><strong>RetryJob</strong>Stores what must be retried and how many attempts happened.</div>
+  <div class="class-card"><strong>RetryPolicy</strong>Decides if and when another attempt is allowed.</div>
+  <div class="class-card"><strong>RetryProcessor</strong>Loads due jobs and executes the retry action.</div>
+  <div class="class-card"><strong>JobRepository</strong>Persists job state so retries survive restarts.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that a retryable operation should not retry forever. It must eventually succeed, wait, or become permanently failed.
+
+This matters in payments because aggressive retries can overload processors or duplicate side effects.
+
+### Step-by-step Explanation
+
+`RetryJob` stores operation id, next retry time, attempt count, status, and last error.
+
+`RetryPolicy` owns the retry math. For example, it can wait one second, then two seconds, then four seconds. This is called backoff in simple words: wait longer after each failure.
+
+`RetryProcessor` scans for due jobs. It runs only jobs whose next retry time has arrived.
+
+`JobRepository` keeps jobs durable. If the worker crashes, another worker can continue later.
+
+### Failure and Safe Defaults
+
+If the operation is not idempotent, do not retry automatically.
+
+If the error is permanent, such as invalid merchant, stop retrying.
+
+If the downstream system is down, slow the retry rate so the system can recover.
+
+### Follow-up Interview Questions With Answers
+
+**Q: How do you avoid duplicate retries across workers?**  
+A: Claim a job atomically before processing it, often with a status update or lock.
+
+**Q: What errors should not be retried?**  
+A: Validation errors, unauthorized requests, and permanent business rule failures should not be retried.
+
+**Q: What is the key tradeoff?**  
+A: Retrying improves recovery, but too many retries can overload downstream systems.

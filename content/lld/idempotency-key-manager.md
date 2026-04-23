@@ -145,3 +145,45 @@ A: Use expiration based on business needs, such as 24 hours or longer for paymen
 ## 10) Tradeoffs and Wrap
 
 In-memory storage is simple but not durable. A database or key-value store is better for production.
+
+## Beginner Deep Dive: Why These Classes Exist
+
+<div class="class-demo">
+  <div class="class-card"><strong>IdempotencyRecord</strong>Remembers the key, request hash, status, and response.</div>
+  <div class="class-card"><strong>Repository</strong>Finds and saves records without exposing the database.</div>
+  <div class="class-card"><strong>Manager</strong>Decides whether to run the action or return a stored response.</div>
+  <div class="class-card"><strong>Request Hash</strong>Proves the same key is being used for the same request body.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is simple: one idempotency key can only represent one request body. If the client reuses the same key with a different body, the system must reject it.
+
+This matters in payments because a retry can happen after a network timeout. Without idempotency, a retry might charge the customer twice.
+
+### Object-by-object Explanation
+
+`IdempotencyRecord` is the memory of one request. In production it would also store status values such as in_progress, completed, and failed.
+
+`IdempotencyRepository` is the storage boundary. Today it can be a dictionary. In production it should be a durable store with a unique constraint on the key.
+
+`IdempotencyManager` is the workflow owner. It checks existing records, validates the request hash, runs the action once, and stores the response.
+
+The request hash is important because clients can make mistakes. If they send the same key for a different payment amount, returning the old response would be dangerous.
+
+### Concurrency Explanation
+
+Two identical requests can arrive at almost the same time. If both see “no record,” both might run the action.
+
+The production fix is an atomic insert or unique database constraint. Only one request wins the right to create the record. The other request waits or reads the stored result.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Should failed responses be stored?**  
+A: It depends. Validation errors can be stored because the same request will fail again. Temporary system errors may not be stored, so the client can retry.
+
+**Q: How long should records live?**  
+A: Long enough to cover client retries and reconciliation needs. For payments, this is usually longer than a normal web request cache.
+
+**Q: What is the biggest risk?**  
+A: Concurrent first requests. A unique constraint or atomic write protects the invariant.

@@ -107,3 +107,47 @@ A: A dictionary gives lookup, but not eviction order.
 ## 10) Tradeoffs and Wrap
 
 `OrderedDict` is clear. Manual linked list gives more control but more bug risk.
+
+## Beginner Deep Dive: LRU Cache
+
+<div class="class-demo">
+  <div class="class-card"><strong>Cache Entry</strong>Stores a key and value.</div>
+  <div class="class-card"><strong>Hash Map</strong>Finds entries in constant time, O(1).</div>
+  <div class="class-card"><strong>Recency Order</strong>Tracks most recently used to least recently used.</div>
+  <div class="class-card"><strong>Cache API</strong>Supports get and put operations.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that the recency order must match actual usage. The most recently used item is at one end, and the least recently used item is at the other.
+
+The second **invariant** is that cache size never exceeds capacity.
+
+### Step-by-step Explanation
+
+The hash map gives fast lookup. Without it, finding a key would take linear time, O(n).
+
+The recency order tells us which item to evict. In Python, `OrderedDict` can represent this clearly. In a lower-level language, you can use a hash map plus doubly linked list.
+
+`get(key)` returns the value and marks the key as recently used.
+
+`put(key, value)` updates existing keys or inserts new keys. If the cache is full, remove the least recently used key.
+
+### Failure and Safe Defaults
+
+If capacity is zero, the cache should store nothing.
+
+If a key is missing, return a clear miss value.
+
+If concurrency is required, protect `get` and `put` with a lock or use a thread-safe structure.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Why not just use a list?**  
+A: A list makes lookup linear time, O(n). A hash map gives constant time, O(1), lookup.
+
+**Q: What dominates runtime?**  
+A: Both get and put should be constant time, O(1), because lookup and recency updates are constant.
+
+**Q: What is the tradeoff?**  
+A: The cache uses extra linear space, O(n), to make reads and writes fast.

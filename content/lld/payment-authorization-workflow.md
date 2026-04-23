@@ -146,3 +146,51 @@ A: Store an outbox event in the same transaction and retry asynchronously.
 ## 10) Tradeoffs and Wrap
 
 This design is easy to test because each dependency is replaceable. The tradeoff is more classes, but each class has clear ownership.
+
+## Beginner Deep Dive: Payment Authorization Workflow
+
+<div class="class-demo">
+  <div class="class-card"><strong>AuthorizationService</strong>Owns the full authorize workflow.</div>
+  <div class="class-card"><strong>Validator</strong>Checks amount, currency, merchant, and token input.</div>
+  <div class="class-card"><strong>FraudClient</strong>Returns allow, deny, or review decision.</div>
+  <div class="class-card"><strong>ProcessorClient</strong>Talks to the external payment processor.</div>
+  <div class="class-card"><strong>PaymentRepository</strong>Saves payment state transitions.</div>
+  <div class="class-card"><strong>AuditWriter</strong>Records what happened for support and compliance.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that a payment should have one clear state at a time. It should not be both authorized and failed.
+
+The second **invariant** is that every external money movement attempt must be traceable through audit events.
+
+### Step-by-step Explanation
+
+The validator runs first because bad requests should stop early. This protects expensive downstream systems.
+
+The fraud client runs before the processor because we should not ask for authorization if our own risk rules say the transaction is unsafe.
+
+The processor client is isolated because external systems fail in different ways. Keeping this boundary separate makes retries and timeout handling easier.
+
+The repository stores every important state transition. A payment can move from created to pending, authorized, declined, or failed.
+
+The audit writer records the request id, merchant id, decision, and reason. This is essential for support and compliance.
+
+### Failure and Safe Defaults
+
+If validation fails, return a clear client error.
+
+If fraud denies, do not call the processor.
+
+If the processor times out, store pending and reconcile later instead of blindly retrying in a way that could duplicate money movement.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Why not put everything in one method?**  
+A: One method is simple at first, but separate collaborators make validation, fraud, processor calls, storage, and audit easier to test.
+
+**Q: What if audit writing fails?**  
+A: Use an outbox record in the same database transaction as the payment state change, then retry audit publishing asynchronously.
+
+**Q: What is the key tradeoff?**  
+A: More objects add structure, but they also make the workflow easier to test and safer to extend.

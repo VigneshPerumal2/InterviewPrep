@@ -82,3 +82,60 @@ Use virus scanning if needed, signed URLs, encryption, job metrics, and audit lo
 - **tradeoff**: status is not instant, but user request stays fast.
 - **risk**: unsafe file content.
 - **mitigation**: validation, isolation, and scanning.
+
+## Beginner Deep Dive: Upload, Download, and Real-time Dashboard
+
+<div class="system-flow-demo">
+  <div class="system-flow-title">Large files move through storage and workers while the dashboard watches status</div>
+  <div class="flow-lane">
+    <div class="flow-node">Signed Upload URL</div>
+    <div class="flow-node">Object Storage</div>
+    <div class="flow-node">Job Queue</div>
+    <div class="flow-node">Worker Processing</div>
+    <div class="flow-node">Status Dashboard</div>
+  </div>
+  <div class="flow-packet"></div>
+</div>
+
+### Signed Upload URL
+
+Instead of sending a huge file through the app server, the client receives a temporary signed URL and uploads directly to object storage.
+
+I choose signed URLs because app servers should not spend memory and network capacity proxying large files.
+
+### Object Storage
+
+Object storage holds the raw file and processed output. Metadata such as owner, status, size, and checksum lives in a database.
+
+This keeps large binary data separate from queryable business data.
+
+### Job Queue and Worker
+
+After upload, a job is added to a queue. Workers process files in the background.
+
+I choose a queue because processing can take seconds or minutes. The user should see progress instead of waiting on one long request.
+
+### Status Dashboard
+
+The dashboard reads job status and can update through polling or server-sent events.
+
+I choose polling first for simplicity. I would choose WebSockets if updates need to be very frequent and interactive.
+
+### Failure, Multi-region, and Safe Fallback
+
+**risks**: oversized files, malware, duplicate uploads, failed workers, and stale dashboard status.
+
+**decisions**: enforce size limits, validate file type, scan files, make jobs idempotent, and store status transitions.
+
+For multi-region, store files in the region required by data residency. Processing workers should run near the storage region to reduce latency and compliance risk.
+
+## Follow-up Interview Questions With Answers
+
+**Q: Why direct upload instead of app server upload?**  
+A: Direct upload is cheaper and more reliable for large files because object storage is built for that workload.
+
+**Q: How do you show progress?**  
+A: Store job state such as queued, processing, succeeded, and failed. The UI polls or subscribes to status changes.
+
+**Q: What if processing fails halfway?**  
+A: Mark the job failed, keep the original file, retry if safe, and show a clear error to the user.

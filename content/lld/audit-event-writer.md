@@ -107,3 +107,47 @@ A: Use an outbox table or durable queue so the business action and audit intent 
 ## 10) Tradeoffs and Wrap
 
 Synchronous audit is simpler but can slow the main path. Outbox-based audit is more reliable for production.
+
+## Beginner Deep Dive: Audit Event Writer
+
+<div class="class-demo">
+  <div class="class-card"><strong>AuditEvent</strong>Immutable fact about who did what and when.</div>
+  <div class="class-card"><strong>AuditWriter</strong>Validates and appends audit events.</div>
+  <div class="class-card"><strong>AuditRepository</strong>Stores events durably.</div>
+  <div class="class-card"><strong>Outbox</strong>Retries publishing without losing events.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that audit events are append-only. Once written, they should not be edited in place.
+
+This matters because audit history is used for compliance, investigations, and support.
+
+### Step-by-step Explanation
+
+`AuditEvent` stores actor, action, resource, timestamp, request id, and reason.
+
+`AuditWriter` checks required fields and writes the event.
+
+`AuditRepository` hides the storage system. It could write to a database, event stream, or immutable log.
+
+The outbox stores events that need to be published. If publishing fails, a background worker retries.
+
+### Failure and Safe Defaults
+
+If audit writing fails for a sensitive operation, the operation should fail or store an outbox record in the same transaction.
+
+If the event stream is down, keep local durable records and publish later.
+
+If a user lacks permission, record the denied attempt too.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Why append-only?**  
+A: Changing old audit events weakens trust. Corrections should be new events, not edits.
+
+**Q: How do you search audit history?**  
+A: Store query fields like actor, resource, action, tenant, and time range in indexed storage.
+
+**Q: What is the key tradeoff?**  
+A: Strong auditability adds storage and operational cost, but it is essential for payment and compliance systems.

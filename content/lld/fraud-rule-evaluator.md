@@ -112,3 +112,47 @@ A: Create another rule object with the same `evaluate` method.
 ## 10) Tradeoffs and Wrap
 
 Strategy objects are easy to extend. The tradeoff is that rule ordering and conflict resolution must be explicit.
+
+## Beginner Deep Dive: Fraud Rule Evaluator
+
+<div class="class-demo">
+  <div class="class-card"><strong>FraudRule</strong>One condition that can allow, deny, or review.</div>
+  <div class="class-card"><strong>RuleContext</strong>Input facts about transaction, merchant, and customer.</div>
+  <div class="class-card"><strong>RuleEvaluator</strong>Runs rules and merges decisions.</div>
+  <div class="class-card"><strong>Decision</strong>Final result plus reason codes.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that the evaluator must return one final decision with explainable reasons.
+
+This matters because fraud systems need to explain why a payment was blocked or reviewed.
+
+### Step-by-step Explanation
+
+`RuleContext` contains the data rules need. Examples: amount, country, merchant category, recent transaction count, and account age.
+
+`FraudRule` is an interface or base class. Each concrete rule checks one thing.
+
+`RuleEvaluator` loops through active rules, collects results, and applies priority. A deny decision usually beats review, and review usually beats allow.
+
+`Decision` stores final action and reasons. Reason codes help audits and support teams.
+
+### Failure and Safe Defaults
+
+If a rule has missing data, it should return review or no decision based on risk.
+
+If rules conflict, priority must be explicit.
+
+If the evaluator fails completely, high-risk transactions should fail safe, often deny or review.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Why use a rule interface?**  
+A: It lets us add new rules without rewriting the evaluator.
+
+**Q: How do you test it?**  
+A: Test each rule alone, then test evaluator priority with conflicting decisions.
+
+**Q: What is the tradeoff?**  
+A: Rules are explainable, but too many rules can become hard to manage without ownership and monitoring.

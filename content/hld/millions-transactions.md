@@ -97,3 +97,62 @@ Use backpressure, retry with delay, dead-letter storage in plain words as failed
 - **tradeoff**: asynchronous processing improves scale but adds eventual consistency.
 - **risk**: hotspots from large tenants.
 - **mitigation**: partition by tenant plus shard.
+
+## Beginner Deep Dive: Scaling Millions of Transactions
+
+<div class="system-flow-demo">
+  <div class="system-flow-title">At high scale, keep the request path thin and move side work to streams</div>
+  <div class="flow-lane">
+    <div class="flow-node">Stateless API Fleet</div>
+    <div class="flow-node">Fast Validation</div>
+    <div class="flow-node">Partitioned Event Stream</div>
+    <div class="flow-node">Sharded Stores</div>
+    <div class="flow-node">Monitoring + Replay</div>
+  </div>
+  <div class="flow-packet"></div>
+</div>
+
+### Stateless API Fleet
+
+Stateless means any server can handle any request because the important state is in shared storage. This makes scaling easier because adding more servers increases capacity.
+
+I choose stateless APIs because traffic can spike during holidays, product launches, or merchant incidents. If one server dies, another server can continue.
+
+### Partitioned Event Stream
+
+An event stream stores facts such as “authorization requested,” “authorization approved,” and “fraud score calculated.” Partitions let many consumers process events in parallel.
+
+I choose an event stream for high-volume side effects because analytics, notifications, monitoring, and reconciliation do not all need to happen inside the checkout response.
+
+### Sharded Storage
+
+Sharding means splitting data across multiple database partitions. A good shard key spreads load evenly.
+
+For payments, a shard key like merchant id plus time bucket can help. A single huge merchant can still become hot, so the design may need merchant id plus an extra shard number.
+
+### Backpressure and Replay
+
+Backpressure means slowing producers or consumers when the system is overloaded. Replay means reading old events again to rebuild derived data or recover from a bug.
+
+I choose event replay because payment systems need recovery. If an analytics worker fails, we should not lose the transaction event.
+
+### Failure, Multi-region, and Safe Fallback
+
+**risks**: hot merchants, delayed consumers, duplicate events, and partial regional outages.
+
+**decisions**: make APIs stateless, partition by stable keys, make consumers idempotent, and keep raw event history long enough for replay.
+
+**operational items**: watch event lag, approval rate, error rate, duplicate rate, and database partition health.
+
+For multi-region, reads can be local. Writes are harder. I would start with regional routing plus a primary write path for each merchant region. If a region fails, traffic can fail over only after the idempotency and event replay plan is safe.
+
+## Follow-up Interview Questions With Answers
+
+**Q: What dominates latency?**  
+A: Network calls to fraud, processor, and database writes dominate latency. CPU work is usually not the bottleneck.
+
+**Q: How do you handle duplicates in streams?**  
+A: Every event has a stable id. Consumers store processed ids or use idempotent writes, so processing the same event twice does not create duplicate side effects.
+
+**Q: What is the main scaling tradeoff?**  
+A: Partitioning increases throughput, but it makes queries across all data harder. I solve that with analytics stores and carefully chosen access patterns.

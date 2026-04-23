@@ -103,3 +103,45 @@ A: Store counters in a shared fast store, or use approximate per-region limits w
 ## 10) Tradeoffs and Wrap
 
 Token bucket supports bursts. The tradeoff is that distributed exactness is harder.
+
+## Beginner Deep Dive: API Rate Limiter
+
+<div class="class-demo">
+  <div class="class-card"><strong>RateLimitPolicy</strong>Defines capacity and refill speed.</div>
+  <div class="class-card"><strong>BucketState</strong>Stores available tokens and last refill time.</div>
+  <div class="class-card"><strong>RateLimiter</strong>Checks whether one request is allowed.</div>
+  <div class="class-card"><strong>StateStore</strong>Persists counters for distributed servers.</div>
+</div>
+
+### What The Design Is Protecting
+
+The main **invariant** is that a client cannot consume more tokens than the policy allows.
+
+This protects shared services from overload and keeps one merchant from hurting others.
+
+### Step-by-step Explanation
+
+`RateLimitPolicy` stores the maximum burst and refill rate. Burst means short temporary extra capacity.
+
+`BucketState` stores how many tokens are left. Tokens refill over time.
+
+`RateLimiter` calculates how many tokens should be added since the last request, caps the bucket at max capacity, and then spends one token if available.
+
+`StateStore` can be in-memory for one server or a shared fast store for many servers.
+
+### Failure and Safe Defaults
+
+If the counter store is down, the safest option is to apply a small local limit so the backend is protected.
+
+If the policy is missing, use the default strict policy instead of unlimited access.
+
+### Follow-up Interview Questions With Answers
+
+**Q: Why token bucket?**  
+A: It allows short bursts while still controlling long-term traffic.
+
+**Q: How do you make it distributed?**  
+A: Store bucket state in a shared store and update it atomically.
+
+**Q: What is the key tradeoff?**  
+A: Shared counters are more accurate but slower. Local counters are faster but less globally accurate.
